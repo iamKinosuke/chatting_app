@@ -50,6 +50,16 @@ export const sendMessage = async (req, res) => {
     const senderId = req.user._id
     const receiverId = req.params.id
 
+    if (!text && !image) {
+      return res.status(400)
+        .json({ message: 'Message text or image is required' })
+    }
+
+    if (senderId.toString() === receiverId.toString()) {
+      return res.status(400)
+        .json({ message: 'You cannot send a message to yourself' })
+    }
+
     let imageUrl
 
     if (image) {
