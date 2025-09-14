@@ -1,0 +1,106 @@
+import cloudinary from '../lib/cloudinary.js'
+
+import Message from '../models/Message.js'
+import User from '../models/User.js'
+
+export const getAllContacts = async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id
+
+    const contacts = await User.find({
+      _id: { $ne: loggedInUserId }
+    })
+      .select('-password')
+
+    return res.status(200)
+      .json(contacts)
+  } catch (error) {
+    return res.status(500)
+      .json({ message: 'Internal server error' })
+  }
+}
+
+export const getMessagesByUserId = async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id
+    const userId = req.params.id
+
+    const messages = await Message.find({
+      $or: [
+        { sender: loggedInUserId, receiver: userId },
+        { sender: userId, receiver: loggedInUserId }
+      ],
+    })
+
+    return res.status(200)
+      .json(messages)
+  } catch (error) {
+    return res.status(500)
+      .json({ message: 'Internal server error' })
+  }
+}
+
+export const sendMessage = async (req, res) => {
+  try {
+    const {
+      text,
+      image,
+    } = req.body
+
+    const senderId = req.user._id
+    const receiverId = req.params.id
+
+    let imageUrl
+
+    if (image) {
+      const uploadResponse = await cloudinary.uploader.upload(image)
+
+      imageUrl = uploadResponse.secure_url
+    }
+
+    const newMessage = new Message({
+      senderId: senderId,
+      receiverId: receiverId,
+      text,
+      image: imageUrl,
+    })
+
+    await newMessage.save()
+
+    return res.status(201)
+      .json(newMessage)
+  } catch (error) {
+    console.log(error)
+    return res.status(500)
+      .json({ message: 'Internal server error' })
+  }
+}
+
+export const getChatPartners = async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id
+
+    const messages = await Message.find({
+      $or: [
+        { senderId: loggedInUserId },
+        { receiverId: loggedInUserId }
+      ]
+    })
+
+    const partnerIds = [...new Set(messages.map(msg =>
+      msg.senderId.toString() === loggedInUserId.toString()
+        ? msg.receiverId.toString()
+        : msg.senderId.toString()
+    ))]
+
+    const partners = await User.find({
+      _id: { $in: partnerIds }
+    })
+
+    return res.status(200)
+      .json(partners)
+  } catch (error) {
+    return res.status(500)
+      .json({ message: 'Internal server error' })
+  }
+}
