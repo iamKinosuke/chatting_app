@@ -51,8 +51,6 @@ function LoginPage() {
                       />
                     </div>
                   </div>
-
-                  {/* PASSWORD INPUT */}
                   <div>
                     <label className='auth-input-label'>Password</label>
                     <div className='relative'>
@@ -82,7 +80,6 @@ function LoginPage() {
                 </div>
               </div>
             </div>
-
             <div className='hidden md:w-1/2 md:flex items-center justify-center p-6 bg-gradient-to-bl from-slate-800/20 to-transparent'>
               <div>
                 <img
@@ -92,7 +89,6 @@ function LoginPage() {
                 />
                 <div className='mt-6 text-center'>
                   <h3 className='text-xl font-medium text-cyan-400'>Connect anytime, anywhere</h3>
-
                   <div className='mt-4 flex justify-center gap-4'>
                     <span className='auth-badge'>Free</span>
                     <span className='auth-badge'>Easy Setup</span>

@@ -45,11 +45,10 @@ export const useChatStore = create((set, get) => ({
     }
   },
   getMessagesByUserId: async (userId) => {
-    console.log(userId)
     set({ isMessagesLoading: true })
     try {
       const res = await axiosInstance.get(`/messages/${userId}`)
-      console.log(res.data)
+
       set({ messages: res.data })
     } catch (error) {
       toast.error(error.response?.data?.message || 'Something went wrong')
@@ -84,5 +83,26 @@ export const useChatStore = create((set, get) => ({
 
       toast.error(error.response?.data?.message || 'Something went wrong')
     }
+  },
+  subscribeToMessages: () => {
+    const { selectedUser } = get()
+    if (!selectedUser) return
+
+    const socket = useAuthStore.getState().socket
+
+    socket.on('newMessage', (newMessage) => {
+      const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id
+
+      if (!isMessageSentFromSelectedUser) return
+
+      const currentMessages = get().messages
+
+      set({ messages: [...currentMessages, newMessage] })
+    })
+  },
+  unsubscribeFromMessages: () => {
+    const socket = useAuthStore.getState().socket
+
+    socket.off('newMessage')
   },
 }))

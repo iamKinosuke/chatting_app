@@ -18,6 +18,8 @@ function ChatContainer() {
     getMessagesByUserId,
     messages,
     isMessagesLoading,
+    subscribeToMessages,
+    unsubscribeFromMessages,
   } = useChatStore()
 
   const { authUser } = useAuthStore()
@@ -26,8 +28,10 @@ function ChatContainer() {
 
   useEffect(() => {
     getMessagesByUserId(selectedUser._id)
-    
-  }, [selectedUser, getMessagesByUserId])
+    subscribeToMessages()
+
+    return () => unsubscribeFromMessages()
+  }, [selectedUser, getMessagesByUserId, subscribeToMessages, unsubscribeFromMessages])
 
   useEffect(() => {
     if (messageEndRef.current) {
@@ -59,7 +63,10 @@ function ChatContainer() {
                   )}
                   {msg.text && <p className='mt-2'>{msg.text}</p>}
                   <p className='text-xs mt-1 opacity-75 flex items-center gap-1'>
-                    {new Date(msg.createdAt).toLocaleTimeString(undefined, {
+                    {new Date(msg.createdAt).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
